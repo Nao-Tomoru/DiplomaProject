@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DiplomaProject.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ClientId" Type="System.String" Scope="User">
+      <Value Profile="(Default)">vhr4t02hpip5mwgo28d5ywaxqhw14i</Value>
+    </Setting>
+    <Setting Name="ClientSecret" Type="System.String" Scope="User">
+      <Value Profile="(Default)">i7gqk9npuk89h4lf7lknvtw80gpjhf</Value>
+    </Setting>
+    <Setting Name="SpotifyCLID" Type="System.String" Scope="User">
+      <Value Profile="(Default)">59ddfeab9fad461f86d50bfd6adcc74c</Value>
+    </Setting>
+    <Setting Name="SpotifyCLSCR" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ff5884fff82d4ad7aaaa0182d51bde57</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
