@@ -364,15 +364,14 @@ namespace DiplomaProject
 
         private int AddMusicToQueue(string UserInput)
         {
+            var z = UserInput.Substring(trackLinkStart.Length);
+            var x = z.Split('?');
             try
             {
-                var z = UserInput.Substring(trackLinkStart.Length);
-                var x = z.Split('?');
-                //   await spotifyClient.Player.AddToQueue(new PlayerAddToQueueRequest(trackUriStart + x[0]));
-                //string track = redemption.UserInput.TrimStart("https://open.spotify.com/track/".ToCharArray());
-
                 var track_info = spotifyClient.Tracks.Get(x[0]);
                 Log($"Playing track " + track_info.Result.Name + " by " + track_info.Result.Artists.First().Name);
+                await spotifyClient.Player.AddToQueue(new PlayerAddToQueueRequest(trackUriStart + x[0]));
+                string track = redemption.UserInput.TrimStart("https://open.spotify.com/track/".ToCharArray());
                 return 0;
             }
             catch (Exception ex)
