@@ -8,16 +8,16 @@
         Title="Twitch2Spotify" Height="270" Width="435" MinHeight="270" MinWidth="435"
         Closing="MainWindowClosting">
     <Grid>
-        <Button x:Name="startBotButton" Content="Start" HorizontalAlignment="Left" Margin="10,21,0,0" VerticalAlignment="Top" Click="startBotButton_Click" Width="64" Height="33"/>
+        <Button x:Name="startBotButton" Content="Start" HorizontalAlignment="Left" Margin="10,21,0,0" VerticalAlignment="Top" Click="StartBotButton_Click" Width="64" Height="33"/>
+        <Button x:Name="updateButton" Content="Save" HorizontalAlignment="Left" Margin="10,21,0,0" VerticalAlignment="Top" Height="33" Width="64" IsEnabled="False" Visibility="Hidden" Click="UpdateButton_Click"/>
         <TextBox x:Name="logTextBox" Margin="169,21,10,10" TextWrapping="Wrap" Text="" IsReadOnly="True"/>
-        <CheckBox x:Name="subCheckCheckBox" Content="Subs only" HorizontalAlignment="Left" Margin="10,75,0,0" VerticalAlignment="Top" Width="154"/>
-        <CheckBox x:Name="commandUseCheckBox" Content="Using command instead" HorizontalAlignment="Left" Margin="10,95,0,0" VerticalAlignment="Top" Height="20" UseLayoutRounding="False" Width="154" />
+        <CheckBox x:Name="subCheckCheckBox" Content="Subs only" HorizontalAlignment="Left" Margin="10,75,0,0" VerticalAlignment="Top" Width="154" Checked="SubCheckCheckBox_Changed" Unchecked="SubCheckCheckBox_Changed"/>
+        <CheckBox x:Name="commandUseCheckBox" Content="Using command" HorizontalAlignment="Left" Margin="10,95,0,0" VerticalAlignment="Top" Height="20" Width="154" Checked="CommandUseCheckBox_Changed" Unchecked="CommandUseCheckBox_Changed"/>
         <Label x:Name="label" Content="Command Name" HorizontalAlignment="Left" Margin="10,120,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="commandNameTextBox" HorizontalAlignment="Left" Margin="10,145,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="commandNameTextBox" HorizontalAlignment="Left" Margin="10,145,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" TextChanged="CommandNameTextBox_TextChanged"/>
         <Label x:Name="label1" Content="Command Cooldown" HorizontalAlignment="Left" Margin="10,178,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="commandCooldownTextbox" HorizontalAlignment="Left" Margin="10,209,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="50" PreviewTextInput="commandCooldownTextbox_PreviewTextInput" MaxLength="3" />
+        <TextBox x:Name="commandCooldownTextbox" HorizontalAlignment="Left" Margin="10,209,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="50" PreviewTextInput="CommandCooldownTextbox_PreviewTextInput" MaxLength="3" TextChanged="CommandCooldownTextbox_TextChanged" />
         <Label x:Name="label2" Content="seconds" HorizontalAlignment="Left" Margin="72,204,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="updateButton" Content="Update" HorizontalAlignment="Left" Margin="10,21,0,0" VerticalAlignment="Top" Height="33" Width="64" IsEnabled="False" Visibility="Hidden" Click="updateButton_Click"/>
 
     </Grid>
 </Window>
