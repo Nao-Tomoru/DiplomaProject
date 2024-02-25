@@ -27,8 +27,9 @@ namespace DiplomaProject
 {
     internal class TwitchService
     {
-        DateTime _lastCommandTime = DateTime.MinValue;
+        DateTime _lastCommandTime = DateTime.UnixEpoch;
         Functions _functions;
+        private readonly string defaultTitle = "[Created Automaticaly] Add to Spotify Queue";
 
         //TwitchLib
         private TwitchClient _ownerOfChannelConnection;
@@ -187,23 +188,35 @@ namespace DiplomaProject
             _pubSubClient.OnChannelPointsRewardRedeemed += Client_onPubSubChannelPointsRewardRedeemed;
         }
 
-        private void PubSubClient_OnPubSubServiceConnected(object? sender, EventArgs e)
+        private async void PubSubClient_OnPubSubServiceConnected(object? sender, EventArgs e)
         {
-
-            _mainWindow.Log($"Connected to pubsub server");
-
-            _pubSubClient.SendTopics(CachedOwnerOfChannelAccessToken);
-            var response = _twitchAPI.Helix.ChannelPoints.GetCustomRewardAsync(TwitchChannelId);
-            bool exists = false;
-            foreach (var item in response.Result.Data)
+            try
             {
-                if (item.Title == "Add to Spotify Queue")
+                _mainWindow.Log($"Connected to pubsub server");
+
+                _pubSubClient.SendTopics(CachedOwnerOfChannelAccessToken);
+                var response = await _twitchAPI.Helix.ChannelPoints.GetCustomRewardAsync(TwitchChannelId);
+                bool exists = false;
+                foreach (var item in response.Data)
                 {
-                    exists = true; break;
+                    if (item.Id == _botSettings.RewardId)
+                    {
+                        exists = true; break;
+                    }
+                }
+                if (!exists)
+                {
+                    var createResponse = await _twitchAPI.Helix.ChannelPoints.CreateCustomRewardsAsync(TwitchChannelId, new TwitchLib.Api.Helix.Models.ChannelPoints.CreateCustomReward.CreateCustomRewardsRequest() { Title = defaultTitle, Cost = 1, IsUserInputRequired = true, IsEnabled = true, Prompt = "Input Spotify track link" }); ;
+                    foreach( var item in createResponse.Data)
+                    {
+                        if  (item.Title == defaultTitle)
+                        {
+                            await _botSettings.SetRewardId(item.Id);
+                        }
+                    }
                 }
             }
-            if (!exists)
-                _twitchAPI.Helix.ChannelPoints.CreateCustomRewardsAsync(TwitchChannelId, new TwitchLib.Api.Helix.Models.ChannelPoints.CreateCustomReward.CreateCustomRewardsRequest() { Title = "Add to Spotify Queue", Cost = 1, IsUserInputRequired = true, IsEnabled = true, Prompt = "Input Spotify track link" });
+            catch (Exception ex) { _mainWindow.Log(ex.Message); }
         }
         private void PubSubClient_OnListenResponse(object? sender, OnListenResponseArgs e)
         {
@@ -216,28 +229,29 @@ namespace DiplomaProject
         private async void Client_onPubSubChannelPointsRewardRedeemed(object sender, OnChannelPointsRewardRedeemedArgs e)
         {
             bool isASub = false;
-            var subsrcribers = _twitchAPI.Helix.Subscriptions.GetBroadcasterSubscriptionsAsync(TwitchChannelId).Result;
-            for (int i = 0; i < subsrcribers.Data.Length; i++)
+            if (_botSettings.isSubOnly)
             {
-                if (subsrcribers.Data[i].UserId == e.RewardRedeemed.Redemption.User.Id)
+                var subsrcribers = _twitchAPI.Helix.Subscriptions.GetBroadcasterSubscriptionsAsync(TwitchChannelId).Result;
+                for (int i = 0; i < subsrcribers.Data.Length; i++)
                 {
-                    isASub = true; break;
+                    if (subsrcribers.Data[i].UserId == e.RewardRedeemed.Redemption.User.Id)
+                    {
+                        isASub = true; break;
+                    }
                 }
             }
-            if (_botSettings.isSubOnly && isASub)
+            if ((_botSettings.isSubOnly && isASub)||(!_botSettings.isSubOnly))
             {
                 var redemption = e.RewardRedeemed.Redemption;
                 var reward = e.RewardRedeemed.Redemption.Reward;
-                if (reward.Title.ToLower() == "add to spotify queue")
+                if (reward.Id == _botSettings.RewardId)
                 {
-
                     var result = _functions.AddMusicToQueue(redemption.UserInput);
 
                     if (result == 1)
                     {
                         await _twitchAPI.Helix.ChannelPoints.UpdateRedemptionStatusAsync(e.ChannelId, reward.Id, new List<string>() { e.RewardRedeemed.Redemption.Id }, new UpdateCustomRewardRedemptionStatusRequest() { Status = CustomRewardRedemptionStatus.CANCELED }, CachedOwnerOfChannelAccessToken);
                         _ownerOfChannelConnection.SendMessage(TwitchChannelName, "Input was not a link or was incorrect");
-                        _mainWindow.Log($"Incorrect input");
                     }
 
                 }
@@ -285,8 +299,12 @@ namespace DiplomaProject
                             return;
                         }
                     }
-                    _functions.AddMusicToQueue(e.Command.ArgumentsAsList.First());
-                    _lastCommandTime = DateTime.Now;
+                    var result = _functions.AddMusicToQueue(e.Command.ArgumentsAsList.First());
+                    if (result == 0)
+                    {
+                        _lastCommandTime = DateTime.Now;
+                    }
+                    else { _ownerOfChannelConnection.SendMessage(TwitchChannelName, "An error occured. Recheck your input or try again later."); }
                 }
             }
         }

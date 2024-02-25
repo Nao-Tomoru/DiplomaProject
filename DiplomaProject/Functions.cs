@@ -25,14 +25,18 @@ namespace DiplomaProject
         {
             try
             {
-                var z = UserInput.Substring(_spotifyService.GetTrackLinkStart().Length);
-                var x = z.Split('?');
-                //   await spotifyClient.Player.AddToQueue(new PlayerAddToQueueRequest(trackUriStart + x[0]));
-                //string track = redemption.UserInput.TrimStart("https://open.spotify.com/track/".ToCharArray());
+                if (UserInput.Length > _spotifyService.GetTrackLinkStart().Length)
+                {
+                    var z = UserInput.Substring(_spotifyService.GetTrackLinkStart().Length);
+                    var x = z.Split('?');
+                    //   await spotifyClient.Player.AddToQueue(new PlayerAddToQueueRequest(trackUriStart + x[0]));
+                    //string track = redemption.UserInput.TrimStart("https://open.spotify.com/track/".ToCharArray());
 
-                var track_info = _spotifyService.GetSpotifyClient().Tracks.Get(x[0]);
-                _mainWindow.Log($"Playing track " + track_info.Result.Name + " by " + track_info.Result.Artists.First().Name);
-                return 0;
+                    var track_info = _spotifyService.GetSpotifyClient().Tracks.Get(x[0]);
+                    _mainWindow.Log($"Playing track " + track_info.Result.Name + " by " + track_info.Result.Artists.First().Name);
+                    return 0;
+                }
+                else { throw new Exception("Incorrect input"); }
             }
             catch (Exception ex)
             {

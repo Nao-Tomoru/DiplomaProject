@@ -15,6 +15,8 @@ namespace DiplomaProject
         public string CommandName { get; set; }
         public uint CommandCooldown { get; set; }
 
+        public string RewardId { get; set; } = null;
+
         public bool isSubOnly { get; set; }
         public bool isCommandEnabled { get; set; }
 
@@ -39,6 +41,7 @@ namespace DiplomaProject
                     CommandCooldown = botSettings.CommandCooldown;
                     isCommandEnabled = botSettings.isCommandEnabled;
                     isSubOnly = botSettings.isSubOnly;
+                    RewardId = botSettings.RewardId;
                 }
                 else
                 {
@@ -62,7 +65,18 @@ namespace DiplomaProject
         {
             CommandName = name;
             CommandCooldown = cooldown;
+            await WriteChanges();
+        }
 
+        public async Task SetRewardId(string rewardId)
+        {
+            RewardId = rewardId;
+            await WriteChanges();
+
+        }
+
+        public async Task WriteChanges()
+        {
             string jsonString = JsonSerializer.Serialize(this);
             StreamWriter streamWriter = new("Settings.json", false)
             {
