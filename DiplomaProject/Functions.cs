@@ -7,32 +7,23 @@ using System.Threading.Tasks;
 
 namespace DiplomaProject
 {
-    internal class Functions
+    internal class Functions(SpotifyService spotifyService, MainWindow mainWindow, BotSettings settings)
     {
 
-        private SpotifyService _spotifyService;
-        private MainWindow _mainWindow;
-        private BotSettings _botSettings;
+        private readonly SpotifyService _spotifyService = spotifyService;
+        private readonly MainWindow _mainWindow = mainWindow;
+        private readonly BotSettings _botSettings = settings;
 
-        public Functions(SpotifyService spotifyService, MainWindow mainWindow, BotSettings settings)
-        {
-            _spotifyService = spotifyService;
-            _mainWindow = mainWindow;
-            _botSettings = settings;
-        }
-
-        public int AddMusicToQueue(string UserInput)
+        public async Task<int> AddMusicToQueueAsync(string UserInput)
         {
             try
             {
                 if (UserInput.Length > _spotifyService.GetTrackLinkStart().Length)
                 {
-                    var z = UserInput.Substring(_spotifyService.GetTrackLinkStart().Length);
-                    var x = z.Split('?');
-                    //   await spotifyClient.Player.AddToQueue(new PlayerAddToQueueRequest(trackUriStart + x[0]));
-                    //string track = redemption.UserInput.TrimStart("https://open.spotify.com/track/".ToCharArray());
-
-                    var track_info = _spotifyService.GetSpotifyClient().Tracks.Get(x[0]);
+                    var x = UserInput.Split('?');
+                    var z = x[0].Substring(_spotifyService.GetTrackLinkStart().Length);
+                    await _spotifyService.GetSpotifyClient().Player.AddToQueue(new PlayerAddToQueueRequest(_spotifyService.GetTracUriStart() + z));
+                    var track_info = _spotifyService.GetSpotifyClient().Tracks.Get(z);
                     _mainWindow.Log($"Playing track " + track_info.Result.Name + " by " + track_info.Result.Artists.First().Name);
                     return 0;
                 }

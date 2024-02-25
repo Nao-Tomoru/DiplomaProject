@@ -10,14 +10,18 @@ namespace DiplomaProject
 {
     internal class SpotifyService
     {
-        private string redirectURI;
         private MainWindow _mainWindow;
-        private readonly string trackLinkStart = "https://open.spotify.com/track/";
-        private readonly string trackUriStart = "spotify:track:";
+
+        //Spotify Auth
+        private string redirectURI;
         private readonly string SpotifyCLID = Properties.Settings.Default.SpotifyCLID;
         private readonly string SpotfyCLSCR = Properties.Settings.Default.SpotifyCLSCR;
-        private SpotifyClient _spotifyClient;
         EmbedIOAuthServer _server;
+
+        //Spotify API
+        private SpotifyClient _spotifyClient;
+        private readonly string trackLinkStart = "https://open.spotify.com/track/";
+        private readonly string trackUriStart = "spotify:track:";
 
         public SpotifyService(MainWindow mainWindow, string redirectURI)
         {
@@ -38,7 +42,6 @@ namespace DiplomaProject
         private async void initializeWebServer()
         {
             //Local web server to genereate OAuth token
-
             try
             {
                 _server = new EmbedIOAuthServer(new Uri(redirectURI + ":5543/callback"), 5543);

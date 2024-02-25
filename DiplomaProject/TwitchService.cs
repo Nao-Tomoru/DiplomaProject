@@ -1,21 +1,13 @@
 ﻿using Newtonsoft.Json.Linq;
 using NHttp;
-using SpotifyAPI.Web;
-using SpotifyAPI.Web.Auth;
 using Swan;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using TwitchLib.Api;
 using TwitchLib.Api.Core.Enums;
 using TwitchLib.Api.Helix.Models.ChannelPoints.UpdateCustomRewardRedemptionStatus;
-using TwitchLib.Api.Interfaces;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
@@ -27,23 +19,25 @@ namespace DiplomaProject
 {
     internal class TwitchService
     {
-        DateTime _lastCommandTime = DateTime.UnixEpoch;
-        Functions _functions;
+        private DateTime _lastCommandTime = DateTime.UnixEpoch;
+        private BotSettings _botSettings;
+        private Functions _functions;
         private readonly string defaultTitle = "[Created Automaticaly] Add to Spotify Queue";
 
         //TwitchLib
         private TwitchClient _ownerOfChannelConnection;
         private TwitchAPI _twitchAPI;
         private TwitchPubSub _pubSubClient;
+
         // Twitch Auth
         private MainWindow _mainWindow;
-        private BotSettings _botSettings;
         private string redirectURI;
         private readonly string ClientId = Properties.Settings.Default.ClientId;
         private readonly string ClientSecret = Properties.Settings.Default.ClientSecret;
-        private readonly List<string> TwitchScopes = new List<string> { "channel:read:redemptions", "channel:manage:redemptions", "chat:edit", "chat:read", "channel:read:subscriptions" };
+        private readonly List<string> TwitchScopes = new List<string> { "channel:read:redemptions",
+            "channel:manage:redemptions", "chat:edit", "chat:read", "channel:read:subscriptions" };
         private HttpServer WebServer;
-        private EmbedIOAuthServer _server;
+
         //Cache
         private string CachedOwnerOfChannelAccessToken = "Something went wrong";  //for API requests
         private string TwitchChannelId;       //Needed to join chat 
@@ -70,7 +64,6 @@ namespace DiplomaProject
 
         private void InitializeWebServer()
         {
-
             try
             {
                 WebServer = new HttpServer();
@@ -93,12 +86,10 @@ namespace DiplomaProject
                             InitializeOwnerOfChannelConnection(TwitchChannelName, CachedOwnerOfChannelAccessToken);
                             InitializeTwitchAPI(CachedOwnerOfChannelAccessToken);
                         }
-
                     }
                 }
                 catch (Exception ex) { _mainWindow.Log(ex.Message); }
             };
-
             if (WebServer.State != HttpServerState.Started)
             {
                 WebServer.Start();
@@ -145,21 +136,22 @@ namespace DiplomaProject
             {
                 _mainWindow.Log(ex.Message);
             }
-
         }
         void InitializeOwnerOfChannelConnection(string username, string accessToken)
         {
             try
             {
                 _ownerOfChannelConnection = new TwitchClient();
+
                 //Event
                 var creds = new ConnectionCredentials(username, accessToken);
                 _ownerOfChannelConnection.Initialize(creds, TwitchChannelName);
                 _ownerOfChannelConnection.OnConnected += Client_OnConnected;
                 _ownerOfChannelConnection.OnDisconnected += Client_OnDisconnected;
                 _ownerOfChannelConnection.OnChatCommandReceived += Client_OnChatCommandReceived;
-
                 _ownerOfChannelConnection.Connect();
+
+
                 //PubSub Events
                 _pubSubClient = new TwitchPubSub();
                 _pubSubClient.OnListenResponse += PubSubClient_OnListenResponse;
@@ -170,10 +162,7 @@ namespace DiplomaProject
             catch (Exception ex)
             {
                 _mainWindow.Log(ex.Message);
-
             }
-
-
         }
         void InitializeTwitchAPI(string accessToken)
         {
@@ -206,17 +195,21 @@ namespace DiplomaProject
                 }
                 if (!exists)
                 {
-                    var createResponse = await _twitchAPI.Helix.ChannelPoints.CreateCustomRewardsAsync(TwitchChannelId, new TwitchLib.Api.Helix.Models.ChannelPoints.CreateCustomReward.CreateCustomRewardsRequest() { Title = defaultTitle, Cost = 1, IsUserInputRequired = true, IsEnabled = true, Prompt = "Input Spotify track link" }); ;
+                    var createResponse = await _twitchAPI.Helix.ChannelPoints.CreateCustomRewardsAsync(TwitchChannelId,
+                        new TwitchLib.Api.Helix.Models.ChannelPoints.CreateCustomReward.CreateCustomRewardsRequest() { Title = defaultTitle, Cost = 1,
+                            IsUserInputRequired = true, IsEnabled = true, Prompt = "Input Spotify track link" }); ;
                     foreach( var item in createResponse.Data)
                     {
+
                         if  (item.Title == defaultTitle)
                         {
                             await _botSettings.SetRewardId(item.Id);
                         }
+                        
                     }
                 }
             }
-            catch (Exception ex) { _mainWindow.Log(ex.Message); }
+            catch (Exception ex) { _mainWindow.Log(ex.Message+"\n4. Reward with the same title already exists.\n5. You are not Affiliate or Partner."); }
         }
         private void PubSubClient_OnListenResponse(object? sender, OnListenResponseArgs e)
         {
@@ -246,11 +239,12 @@ namespace DiplomaProject
                 var reward = e.RewardRedeemed.Redemption.Reward;
                 if (reward.Id == _botSettings.RewardId)
                 {
-                    var result = _functions.AddMusicToQueue(redemption.UserInput);
+                    var result = _functions.AddMusicToQueueAsync(redemption.UserInput);
 
-                    if (result == 1)
+                    if (result.Result == 1)
                     {
-                        await _twitchAPI.Helix.ChannelPoints.UpdateRedemptionStatusAsync(e.ChannelId, reward.Id, new List<string>() { e.RewardRedeemed.Redemption.Id }, new UpdateCustomRewardRedemptionStatusRequest() { Status = CustomRewardRedemptionStatus.CANCELED }, CachedOwnerOfChannelAccessToken);
+                        await _twitchAPI.Helix.ChannelPoints.UpdateRedemptionStatusAsync(e.ChannelId, reward.Id, new List<string>() { e.RewardRedeemed.Redemption.Id },
+                            new UpdateCustomRewardRedemptionStatusRequest() { Status = CustomRewardRedemptionStatus.CANCELED }, CachedOwnerOfChannelAccessToken);
                         _ownerOfChannelConnection.SendMessage(TwitchChannelName, "Input was not a link or was incorrect");
                     }
 
@@ -270,14 +264,7 @@ namespace DiplomaProject
 
         private void Client_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
         {
-            //string musicCommandName = _botSettings.CommandName;
-            //switch () {
-            //    case 1:
-            //        break;
-            //    default:
-            //        break;
-            //}
-
+       
             if (_botSettings.isCommandEnabled)
             {
                 if (e.Command.CommandText.ToLower() == _botSettings.CommandName.ToLower())
@@ -290,17 +277,17 @@ namespace DiplomaProject
                     {
                         if (_botSettings.isSubOnly)
                         {
-                            _mainWindow.Log("Cooldown remaining: " + (15 - (timeSendInt - _lastCommandTime.ToUnixEpochDate() * 1000) / 1000));
-                            return;
-                        }
-                        if (!e.Command.ChatMessage.IsSubscriber)
-                        {
-                            _ownerOfChannelConnection.SendMessage(TwitchChannelName, e.Command.ChatMessage.DisplayName + "is not subscriber");
+                            _mainWindow.Log("Cooldown remaining: " + (_botSettings.CommandCooldown - (timeSendInt - _lastCommandTime.ToUnixEpochDate() * 1000) / 1000));
                             return;
                         }
                     }
-                    var result = _functions.AddMusicToQueue(e.Command.ArgumentsAsList.First());
-                    if (result == 0)
+                        if ((_botSettings.isSubOnly && !e.Command.ChatMessage.IsSubscriber) || _botSettings.isSubOnly)
+                        {
+                            _ownerOfChannelConnection.SendMessage(TwitchChannelName, e.Command.ChatMessage.DisplayName + " is not subscriber");
+                            return;
+                        }
+                    var result = _functions.AddMusicToQueueAsync(e.Command.ArgumentsAsList.First());
+                    if (result.Result == 0)
                     {
                         _lastCommandTime = DateTime.Now;
                     }
@@ -308,23 +295,6 @@ namespace DiplomaProject
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 

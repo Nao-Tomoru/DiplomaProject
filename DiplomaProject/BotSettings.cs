@@ -14,9 +14,7 @@ namespace DiplomaProject
     {
         public string CommandName { get; set; }
         public uint CommandCooldown { get; set; }
-
         public string RewardId { get; set; } = null;
-
         public bool isSubOnly { get; set; }
         public bool isCommandEnabled { get; set; }
 
@@ -72,9 +70,7 @@ namespace DiplomaProject
         {
             RewardId = rewardId;
             await WriteChanges();
-
         }
-
         public async Task WriteChanges()
         {
             string jsonString = JsonSerializer.Serialize(this);

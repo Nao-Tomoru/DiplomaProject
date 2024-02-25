@@ -16,10 +16,6 @@ namespace DiplomaProject
         TwitchService _twitchService;
         SpotifyService _spotifyService;
         Functions _functions;
-
-        private string addToQueueCommand;
-        private ushort commandCooldown;
-
         private readonly string RedirectUri = "http://localhost";
 
 
@@ -90,16 +86,17 @@ namespace DiplomaProject
             try
             {
                 await _botSettings.UpdateSettingsAsync(commandNameTextBox.Text, Convert.ToUInt16(commandCooldownTextbox.Text));
+
             }
             catch (Exception ex) { Log(ex.Message); }
-        }
+            updateButton.IsEnabled = false;
+        }                                                                   
 
         private void CommandUseCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             if (commandUseCheckBox.IsChecked == true) _botSettings.isCommandEnabled = true; else _botSettings.isCommandEnabled = false;
 
         }
-
         private void SubCheckCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             if (subCheckCheckBox.IsChecked == true) _botSettings.isSubOnly = true; else _botSettings.isSubOnly = false;
