@@ -43,7 +43,7 @@ namespace DiplomaProject
         private readonly string ClientSecret = Properties.Settings.Default.ClientSecret;
         private readonly List<string> TwitchScopes = new List<string> { "channel:read:redemptions", "channel:manage:redemptions", "chat:edit", "chat:read", "channel:read:subscriptions" };
         private HttpServer WebServer;
-        private EmbedIOAuthServer _server;
+
         //Cache
         private string CachedOwnerOfChannelAccessToken = "Something went wrong";  //for API requests
         private string TwitchChannelId;       //Needed to join chat 

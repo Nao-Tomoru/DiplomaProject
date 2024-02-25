@@ -16,10 +16,6 @@ namespace DiplomaProject
         TwitchService _twitchService;
         SpotifyService _spotifyService;
         Functions _functions;
-
-        private string addToQueueCommand;
-        private ushort commandCooldown;
-
         private readonly string RedirectUri = "http://localhost";
 
 

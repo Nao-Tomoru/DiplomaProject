@@ -7,19 +7,12 @@ using System.Threading.Tasks;
 
 namespace DiplomaProject
 {
-    internal class Functions
+    internal class Functions(SpotifyService spotifyService, MainWindow mainWindow, BotSettings settings)
     {
 
-        private SpotifyService _spotifyService;
-        private MainWindow _mainWindow;
-        private BotSettings _botSettings;
-
-        public Functions(SpotifyService spotifyService, MainWindow mainWindow, BotSettings settings)
-        {
-            _spotifyService = spotifyService;
-            _mainWindow = mainWindow;
-            _botSettings = settings;
-        }
+        private readonly SpotifyService _spotifyService = spotifyService;
+        private readonly MainWindow _mainWindow = mainWindow;
+        private readonly BotSettings _botSettings = settings;
 
         public int AddMusicToQueue(string UserInput)
         {
