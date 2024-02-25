@@ -58,12 +58,10 @@ namespace DiplomaProject
             isCommandEnabled = false;
 
         }
-        public async Task UpdateSettingsAsync(string name, uint cooldown, bool isSubOnly, bool isCommandEnabled)
+        public async Task UpdateSettingsAsync(string name, uint cooldown)
         {
             CommandName = name;
             CommandCooldown = cooldown;
-            this.isSubOnly = isSubOnly;
-            this.isCommandEnabled = isCommandEnabled;
 
             string jsonString = JsonSerializer.Serialize(this);
             StreamWriter streamWriter = new("Settings.json", false)
